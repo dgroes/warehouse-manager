@@ -1,7 +1,37 @@
 class Category:
     # -> None es una indicación que dice: "Esta función no devuelve ningún valor con un return"
-    def __init__(self, name: str, description:str) -> None:
+    def __init__(self, name: str, description:str, code) -> None:
         self.name: str = name
         self.description: str = description
+        self.code: str = code # Será un código abreviado (Tecnología: tec, Instrumento: ins, Ropa: rop, Lectura: lec, etc)
 
-    
+    @property
+    def name(self) -> str:
+        # usar "_" es una convención de Python para indicarle a otros programadores que esa variable es privada o protegida
+        return self._name
+
+    @name.setter
+    def name(self, value:str) -> None:
+        if not value or not value.strip():
+            raise ValueError("El nombre de la categoría no puede estar vacío")
+        self._name = value.strip().title()
+
+    @property
+    def description(self) -> str:
+        return self._description
+
+    @description.setter
+    def description(self, value: str) -> None:
+        if not value or not value.strip():
+            raise ValueError("La descripción no puede estar vacía")
+        self._description = value.strip().capitalize()
+
+    @property
+    def code(self) -> str:
+        return self._code
+
+    @code.setter
+    def code(self, value: str) -> None:
+        if not value or not value.strip():
+            raise ValueError("El código no puede estar vacío")
+        self._code = value.strip().lower()

@@ -1,23 +1,50 @@
-from category import Category
+from warehouse.domain.category import Category
 
 class Product:
-    # se indica que 'category' debe ser un objeto de la clase Category
-    def __init__(self, name: str, category: Category) -> None:
+    def __init__(self, name: str, category: Category, barcode: str, active: bool) -> None:
+        # Al usar self.name y self.category (sin guion bajo), 
+        # Python activa automáticamente los @setters definidos abajo
+        self.name = name
+        self.category = category
+        self._barcode = barcode
+        self.active = active
 
-        # Validación de nombre
-        if not name or not name.strip():
+    # --- CONTROL DE NOMBRE ---
+    @property
+    def name(self) -> str:
+        #"""Getter: Devuelve el nombre protegido"""
+        return self._name
+
+    @name.setter
+    def name(self, value: str) -> None:
+        #"""Setter: Valida el nombre antes de guardarlo"""
+        if not value or not value.strip():
             raise ValueError("El nombre no puede estar vacío")
+        self._name = value.strip() # Guarda en la variable interna protegida
 
-        # Validación de categoría (Evita vacíos y tipos incorrectos)
-        if not isinstance(category, Category):
+    # --- CONTROL DE CATEGORÍA ---
+    @property
+    def category(self) -> Category:
+        #"""Getter: Devuelve la categoría protegida"""
+        return self._category
+
+    @category.setter
+    def category(self, value: Category) -> None:
+        #"""Setter: Valida el tipo de categoría antes de guardarla"""
+        if not isinstance(value, Category):
             raise ValueError("La categoría debe ser un objeto válido de la clase Category")
+        self._category = value
 
-        self.category: Category = category  
-        self.name: str = name
+    # Control de Barcode
+    @property
+    def barcode(self) -> str:
+        return self._barcode
 
-error = "hola"
+    # Contro de is_active
+    @property
+    def active(self) -> bool:
+        return self._active
 
-tecnologia = Category("Tecnología", "Dispositivos electrónicos y gadgets")
-celular = Product("iPhone 15", error)
-
-print(celular.category.name)
+    @active.setter
+    def active(self, value: bool) -> None:
+        self._active = value
