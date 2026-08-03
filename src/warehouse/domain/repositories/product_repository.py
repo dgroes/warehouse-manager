@@ -7,12 +7,13 @@ class ProductRepository(ABC): #Hereda de ABC
     def save(self, product: Product) -> None:
         pass
 
+    # C07: Optional
     @abstractmethod # Obliga a implementar este método
-    def find_by_barcode(self, barcode: str) -> Product:
+    def find_by_barcode(self, barcode: str) -> Product | None:
         pass
 
     @abstractmethod
-    def find_by_name(self, product: Product) -> None:
+    def find_by_name(self, product: Product) -> None | None:
         pass
 
     @abstractmethod

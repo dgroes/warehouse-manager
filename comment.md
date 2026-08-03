@@ -267,3 +267,41 @@ class SQLiteProductRepository(ProductRepository): # Hereda del contrato
 **¿Por qué es tan útil en Clean Architecture?**
 Porque el caso de uso `CreateProduct` ya no depende de SQLite ni de PostgreSQL. Depende únicamente de la clase abstracta `ProductRepository`.
 Se le dice a Python: "*A mí no me importa qué base de datos me pases, siempre y cuando sea un hijo de `ProductRepository` (es decir, que cumpla el contrato y tenga el método `.save()` disponible)*".
+# C07: Optional
+En python si se busca un código de barras como lo hace `find_by_barcode` que no existe, lo normal es que el repositorio devuelva `None`. `Optional` sirve para avisarle de forma explícita a el editor de código y a otros dev que **el método puede devolver un objeto `Product` o un `None`**
+
+Apartir de Python 3.10, se puede usar el operador `|` que es un ("o"), que es la forma más moderna y limpia de escribir `Optional`, además no hará falta de importar: `from typing import Optional`
+```py
+from abc import ABC, abstractmethod
+from typing import Optional # Requerido si usas Python 3.9 o inferior
+from warehouse.domain import Product
+
+class ProductRepository(ABC):
+
+    @abstractmethod
+    def save(self, product: Product) -> None:
+        pass
+
+    # OPCIÓN A (Python 3.10+): Más limpia, usando el operador |
+    @abstractmethod
+    def find_by_barcode(self, barcode: str) -> Product | None:
+        """Busca por código de barras. Devuelve el Product o None si no existe."""
+        pass
+
+    # OPCIÓN B (Python 3.9 o inferior): Usando la palabra Optional
+    # @abstractmethod
+    # def find_by_barcode(self, barcode: str) -> Optional[Product]:
+    #     pass
+```      
+# C
+# C
+# C
+# C
+# C
+# C
+# C
+# C
+# C
+# C
+# C
+# C
