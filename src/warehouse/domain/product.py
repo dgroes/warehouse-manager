@@ -1,13 +1,17 @@
 from warehouse.domain.category import Category
 
 class Product:
-    def __init__(self, name: str, category: Category, barcode: str, active: bool) -> None:
+    # Aquí el "active" por defectó estará en True 👀, como el valor de active siempre será el mismo, lo mejor sería no exponerlo en el constructor
+    def __init__(
+                self, name: str, 
+                category: Category 
+                #active: bool = True
+            ) -> None:
         # Al usar self.name y self.category (sin guion bajo), 
         # Python activa automáticamente los @setters definidos abajo
         self.name = name
         self.category = category
-        self._barcode = barcode
-        self.active = active
+        self.active = True 
 
     # --- CONTROL DE NOMBRE ---
     @property
@@ -35,10 +39,6 @@ class Product:
             raise ValueError("La categoría debe ser un objeto válido de la clase Category")
         self._category = value
 
-    # Control de Barcode
-    @property
-    def barcode(self) -> str:
-        return self._barcode
 
     # Contro de is_active
     @property
