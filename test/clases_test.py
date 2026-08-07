@@ -13,8 +13,8 @@ from warehouse.domain import Product, Category
 category_test = Category("Tecnología", "Productos de tecnología", "tec")
 
 # Crear productos
-product_1 = Product("iPhone 14 Pro Max", category_test, "1", True)
-product_2 = Product("Samsung S23", category_test, "2", True)
+product_1 = Product("iPhone 14 Pro Max", category_test)
+product_2 = Product("Samsung S23", category_test)
 
 # Lista para almacenar datos
 lista_productos = []
@@ -24,7 +24,6 @@ for p in [product_1, product_2]:
         "name": p.name,
         "category": p.category.name,
         "category_code": p.category.code,
-        "barcode": p.barcode
     })
 
 print(lista_productos)
