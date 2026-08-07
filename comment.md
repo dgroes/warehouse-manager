@@ -293,7 +293,55 @@ class ProductRepository(ABC):
     # def find_by_barcode(self, barcode: str) -> Optional[Product]:
     #     pass
 ```      
-# C
+# C08: Inyección de dependencias
+La inyección de dependencias significa pasarla a una clase los objetos que necesita para funcionar (sus dependencias) desde afuera, en lugar de que la calse los cree ella misma internamente.<br>
+**Un ejemplo de la vida real**
+Imagina que eres un cocinero y necesitas un horno para hacer pan:
+- **Sin Inyección de Dependencias (Opción A)**: Para hacer pan, tú mismo construyes un horno eléctrico dentro de tu cocina. Si mañana quieres cambiarte a un horno de leña o a gas, tienes que romper la pared de tu cocina y reconstruirla.
+- **Con Inyección de Dependencias (Opción B)**: Tú solo pides "un horno que cumpla con calentar a 200°C". Alguien te lo "inyecta" (te lo conecta) desde fuera. A ti no te importa si por dentro funciona con electricidad, gas o leña; tú solo metes la masa y horneas.
+
+**Ahora dentro del código**:<br>
+**Sin inyección**
+```python
+class CreateProduct:
+
+    def __init__(self):
+        # La clase "construye" su propio repositorio SQLite.
+        # Está acoplada directamente a SQLite.
+        self._repository = SQLiteProductRepository()
+```
+Aquí `CreateProduct` depende de SQLite, no hay forma de probar esta clase sin tocar una base de datos SQLite real.<br>
+**Con inyección**
+```python
+class CreateProduct:
+
+    def __init__(self, repository: ProductRepository):
+        # La dependencia se la "inyectamos" desde fuera a través del constructor.
+        self._repository = repository
+```
+Aquí `CreateProduct` solo dice: "Dame algo que respete el contrato  `ProductRepository`, no me importa qué sea ni cómo funcione por dentro".
+## Ventajas
+Esto tiene que ver directamente con **arquitectura limpia** que se está construyendo y da 3 beneficios concretos:
+1. Flexibilidad de infraestructura: El día de mañana, en el punto de entrada del sistema (ejemplo: `main.py`) se puede hacer esto:
+```py
+# Si se usa SQLite:
+repo = SQLiteProductRepository()
+use_case = CreateProduct(repository=repo)
+
+# Si se cambia a PostgreSQL, SOLO se cambia esta línea en main.py:
+repo = PostgresProductRepository()
+use_case = CreateProduct(repository=repo)
+```
+se puede ver que el archivo `create_product.py` no se toca en absoluto
+2. Facilidad para hacer test: Para probar el caso de uso  `CreateProduct` no se necesita levantar toda una base de datos real. Se le "inmyecta" un repositorio falso en memoria (*FakeProductRepository*) que guarde los productos en una simple lista de Python:
+```python
+   fake_repo = FakeProductRepository()
+   use_case = CreateProduct(repository=fake_repo)
+   # ¡Tus tests corren en milisegundos y sin tocar el disco!
+```
+3. **Inversión de Control**: La capa de dominio/aplicación (`CreateProduct`) dicta las reglas (la interfaz `ProductRepository`), y las capas externas (infraestructura) se adaptan a ella.
+
+
 # C
 # C
 # C
