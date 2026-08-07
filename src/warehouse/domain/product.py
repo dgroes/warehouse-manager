@@ -11,7 +11,9 @@ class Product:
         # Python activa automáticamente los @setters definidos abajo
         self.name = name
         self.category = category
-        self.active = True 
+        self.active = True
+        self._id = None
+        self._barcode = None 
 
     # --- CONTROL DE NOMBRE ---
     @property
@@ -48,3 +50,26 @@ class Product:
     @active.setter
     def active(self, value: bool) -> None:
         self._active = value
+
+    # Getters de ID y BARCODE
+    @property
+    def id(self) -> int | None:
+        return self._id
+
+    @property
+    def barcode(self) -> str | None:
+        return self._barcode
+
+
+    # Asignación de ID de manera interna(SIN BD, uso para Test)
+    def _assign_id(self, product_id: int) -> None:
+        if self._id is not None:
+            raise ValueError("El producto ya tiene un ID asignado")
+
+        self._id = product_id
+
+    def _assign_barcode(self, barcode: str) -> None:
+        if self._barcode is not None:
+            raise ValueError("El producto ya tiene un código de barras asignado")
+
+        self._barcode = barcode
