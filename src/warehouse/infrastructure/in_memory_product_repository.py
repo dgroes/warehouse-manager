@@ -25,7 +25,11 @@ class InMemoryProductRepository(ProductRepository): #hereda de ABC
 
     # Usar método obligatorio de ProductRepository
     def find_by_barcode(self, barcode: str) -> Product | None:
-        pass
+        for product in self._products:
+            if product.barcode == barcode:
+                return product
+
+        return None
 
     # Usar método obligatorio de ProductRepository
     def find_by_name(self, name: str) -> Product | None:

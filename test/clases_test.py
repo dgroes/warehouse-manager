@@ -68,7 +68,11 @@ InMemoryProductRepository
 _products
 """
 
-product = repository.find_by_name("MacBook Pro 16")
+# Busqueda por nombre:
+# product = repository.find_by_name("MacBook Pro 16")
+
+# Busqueda por Barcode:
+product = repository.find_by_barcode("0000000002")
 
 if product is not None:
     print(f"{product.name} - {product.category.name} - ID[{product.id}] - BARCODE[{product.barcode}]")
