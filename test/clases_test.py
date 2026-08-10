@@ -69,13 +69,16 @@ _products
 """
 
 # Busqueda por nombre:
-# product = repository.find_by_name("MacBook Pro 16")
+#product = repository.find_by_name("MacBook Pro 16")
 
 # Busqueda por Barcode:
-product = repository.find_by_barcode("0000000002")
+#product = repository.find_by_barcode("0000000002")
+
+# Desactivar un producto por su barcode:
+product = repository.disable("0000000002")
 
 if product is not None:
-    print(f"{product.name} - {product.category.name} - ID[{product.id}] - BARCODE[{product.barcode}]")
+    print(f"{product.name} - {product.category.name} - ID[{product.id}] - BARCODE[{product.barcode}] - ESTADO[{product.active}]")
 else:
     print("[NOT FOUND] No se encontró el producto")
 

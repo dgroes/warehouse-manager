@@ -11,7 +11,7 @@ class Product:
         # Python activa automáticamente los @setters definidos abajo
         self.name = name
         self.category = category
-        self.active = True
+        self._active = True
         self._id = None
         self._barcode = None 
 
@@ -47,9 +47,13 @@ class Product:
     def active(self) -> bool:
         return self._active
 
+    # El setter de "active" será mejor estar como un método, 
+    # Así se evita que cualquier código pueda cambiar "active" arbitrariamente y obligamos a pasar por acciones explícitas
+    """ 
     @active.setter
     def active(self, value: bool) -> None:
-        self._active = value
+        self._active = value 
+    """
 
     # Getters de ID y BARCODE
     @property
@@ -73,3 +77,11 @@ class Product:
             raise ValueError("El producto ya tiene un código de barras asignado")
 
         self._barcode = barcode
+
+    # Método para desactivar
+    def disable(self) -> None:
+        self._active = False
+
+    # Método para activar
+    def enable(self) -> None:
+        self._active = True

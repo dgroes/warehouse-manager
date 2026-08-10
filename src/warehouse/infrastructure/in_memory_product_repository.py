@@ -40,5 +40,9 @@ class InMemoryProductRepository(ProductRepository): #hereda de ABC
         # print("No se encontró el producto")
         return None
 
-    def disable(self, product: Product) -> None:
-        pass
+    def disable(self, barcode: str) -> Product | None:
+        for product in self._products:
+            if product.barcode == barcode:
+                product.disable()
+                return product
+        return None
