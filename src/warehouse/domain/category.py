@@ -12,9 +12,14 @@ class Category:
 
     @name.setter
     def name(self, value:str) -> None:
-        if not value or not value.strip():
-            raise ValueError("El nombre de la categoría no puede estar vacío")
-        self._name = value.strip().title()
+
+        # quitar los espacios al inicio y al final
+        clean_name = value.strip() if value else ""
+
+        if len(clean_name) < 2:
+            raise ValueError("El nombre debe tener al menos 2 caracteres válidos")
+    
+        self._name = clean_name
 
     @property
     def description(self) -> str:
