@@ -5,5 +5,14 @@ from abc import ABC, abstractmethod
 class BarcodeGenerator(ABC):
 
     @abstractmethod
-    def generate(self, product_id: int) -> str:
+    def generate(self) -> str:
         pass
+
+
+# BarcodeGenerator
+#        │
+#        │ contrato
+#        ▼
+# RandomBarcodeGenerator
+#        │
+#        └── generate() → "..."
