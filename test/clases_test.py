@@ -7,7 +7,7 @@ sys.path.append(str(root_path / "src"))
 
 # C04: Imports
 from warehouse.domain import Category
-from warehouse.infrastructure.in_memory_product_repository import (
+from warehouse.infrastructure.repositories.in_memory.in_memory_product_repository import (
     InMemoryProductRepository,
 )
 from warehouse.infrastructure.services.simple_barcode_generator import (
@@ -67,6 +67,9 @@ print(f"\n{disabled_product_2}")
 
 product_2.enable()
 print(f"\n {vars(product_2)}")
+
+print("\n Pruebas finales")
+repository.save(product_1)
 
 
 # Flujo
