@@ -4,6 +4,12 @@ class Category:
         self.name: str = name
         self.description: str = description
         self.code: str = code # Será un código abreviado (Tecnología: tec, Instrumento: ins, Ropa: rop, Lectura: lec, etc)
+        self._id = None
+
+
+    @property
+    def id(self) -> int | None:
+        return self._id
 
     @property
     def name(self) -> str:
@@ -40,3 +46,9 @@ class Category:
         if not value or not value.strip():
             raise ValueError("El código no puede estar vacío")
         self._code = value.strip().lower()
+
+    def _assign_id(self, category_id: int) -> None:
+        if self._id is not None:
+            raise ValueError("La categoría ya tiene un ID asignado")
+
+        self._id = category_id
