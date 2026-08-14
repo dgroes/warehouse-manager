@@ -1,10 +1,21 @@
 import barcode
 from barcode.writer import ImageWriter
 
-# Elegir formato Code 128 (acepta letras y números)
-formato = barcode.get_barcode_class('code128')
-codigo = formato("PRODUCTO-2026", writer=ImageWriter())
+import sys
+from pathlib import Path
 
-# Guarda la imagen automáticamente como 'mi_codigo.png'
-codigo.save("mi_codigo") 
+root_path = Path(__file__).resolve().parent.parent
+sys.path.append(str(root_path / "src"))
 
+from warehouse.infrastructure.services.barcode_render.code128_barcode_renderer import (
+    Code128BarcodeRenderer,
+)
+
+print("BARCODE 128 TEST")
+renderer = Code128BarcodeRenderer(
+    output_dir=root_path / "data" / "barcodes"
+)
+
+codigo_test = "2227118753"
+
+barcode_render = renderer.render(codigo_test)

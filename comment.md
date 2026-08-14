@@ -340,9 +340,115 @@ se puede ver que el archivo `create_product.py` no se toca en absoluto
    # ¡Tus tests corren en milisegundos y sin tocar el disco!
 ```
 3. **Inversión de Control**: La capa de dominio/aplicación (`CreateProduct`) dicta las reglas (la interfaz `ProductRepository`), y las capas externas (infraestructura) se adaptan a ella.
+# C09: Entorno Virutal
+Es básicamente una **carpeta aislada** que contiene su propia copia de Python y sus librerías independientes del resto del sistema operativo.<br>
+**La analogía de los contenedores**:
+- **El Python del sistema (Sin venv)**: Es como instalar todas las herramientas de tu casa en una sola caja gigante compartida por todos en la familia. Si un proyecto necesita la herramienta `A` en versión 1.0 y otro necesita la versión 2.0, entran en conflicto y rompes el sistema.
+- **El Entorno Virtual (Con venv)**: Es como darle a cada proyecto su propia caja de herramientas privada. Tu proyecto `warehouse-manager` tiene su propia carpeta `.venv` donde instalas `python-barcode`. Si mañana creas otro proyecto, tendrá su propio `.venv` sin interferir con este.
 
+Al intentar hacer `python3 -m pip install "python-barcode[images]"` Unbutu (el sistema principal en el cual se está desarrollando el proyecto) lo bloqueó
+## ¿Por qué Ubuntu te bloqueó? (PEP 668)
+En versiones recientes de Ubuntu/Linux, el sistema operativo usa Python internamente para funciones críticas de la interfaz y herramientas del sistema.
 
-# C
+Si se instalan paquetes globales con `pip install`, se corre el riesgo de sobrescribir o actualizar una librería que Ubuntu necesita para funcionar, pudiendo romper la terminal o la interfaz gráfica. Por eso, Linux ahora exige crear un entorno privado (`venv`) para cada proyecto de software que se desarrolle.
+## ¿Qué contiene realmente la carpeta `.venv`?
+Cuando se ejecuta `python3 -m venv .venv`, se crea una carpeta oculta en la raíz de el proyecto (el comando se debería ejecutar en la raíz)
+- `.venv/bin/`: Contiene accesos directos al ejecutable de `python` y `pip`.
+- `.venv/lib/python3.X/site-packages/`: Aquí es donde se descargan e instalan las librerías (como `python-barcode` o `Pillow`).
+
+Al ejecutar source `.venv/bin/activate`, se le dice a la terminal: *"Durante esta sesión, cuando escriba `python` o `pip`, usa los ejecutables que están dentro de mi carpeta `.venv`, no los del sistema operativo*".
+## ¿Por qué NUNCA se debe usar sudo pip?
+**Se puede romper el sistema operativo**: Linux utiliza Python para componentes críticos del sistema (como el gestor de paquetes `apt`, el gestor de red o la interfaz gráfica). Si se usa `sudo pip`, se instalan paquetes con permisos de administrador sobreescribiendo archivos en `/usr/lib/python3`. Si pip actualiza o reemplaza una librería que Ubuntu necesita en una versión diferente, se puede dejar la terminal o el sistema inoperables.
+## Creación del entorno y manejo
+Dentro de la raíz del proyecto se debe ejecutar: `python3 -m venv .venv`, luego estará algo similar a esto:
+```css
+warehouse-manager/
+├── .venv/
+├── src/
+├── test/
+├── data/
+└── ...
+```
+Ahora se debería activar `source .venv/bin/activate` luego de eso se puede comprobar con el comando: `which python`, luego de este segundo comando saldrá está línea:
+```js
+/home/dgroes/Documentos/Workspace/warehouse-manager/.venv/bin/python
+```
+La cual conforma que **el entorno virtual está activo**. <br>
+Ahora sa se podrá instalar la librería sin tocar el Python local del sistema:
+```bash
+python -m pip install "python-barcode[images]"
+```
+
+Luego se podrá comprobar con esto:
+```bash
+python -m pip show python-barcode
+```
+Devolviendo algo como lo siguiente:
+```BASH
+@dgroes ➜ warehouse-manager git(main) python -m pip show python-barcode
+Name: python-barcode
+Version: 0.16.1
+Summary: Create standard barcodes with Python. No external modules needed. (optional Pillow support included).
+Home-page: 
+Author: 
+Author-email: Hugo Osvaldo Barrera et al <hugo@whynothugo.nl>
+License: MIT
+Location: /home/dgroes/Documentos/Workspace/warehouse-manager/.venv/lib/python3.14/site-packages
+Requires: 
+Required-by:
+```
+## Similar a Docker 🐋
+Conceptualmente a una similitud con docker, pero son cosas diferenctes, para ambos casos, se pueden "*instalar cosas en un entorno controlado sin tocar el sofware interno*", pero en el **nivel de aislamiento** es diferente.<br>
+### `venv` 
+es lo que se hizo:
+```js
+Ubuntu
+│
+├── Python del sistema
+│
+└── warehouse-manager
+    │
+    └── .venv
+        ├── Python
+        ├── python-barcode
+        └── Pillow
+```
+`venv` aísla principalmente **el entorno Python y sus paquetes**
+Por ejemplo `pip install python-barcode` lo instala en `warehouse-manager/.venv/` y no en Python global, pero sigue usanso el **kernel, sistema operativo, drivers, USB, archivos, etc. de Ubuntu**.
+### Docker
+Docker lleva el aislamiento mucho más lejos:
+```js
+Ubuntu
+│
+└── Docker
+    │
+    └── Container
+        ├── Python
+        ├── dependencias
+        ├── aplicación
+        └── filesystem aislado
+```
+El contenedor tiene su propio entorno de ejecución, por ejemplo, se podría tener :
+```ts
+Container A
+Python 3.12
+Django 5
+Pillow X
+```
+y además, tener simuláneamente:
+```bash
+Container B
+Python 3.14
+Django 4
+Pillow Y
+```
+sin que las dependencias de uno interfieran directamente con las del otro.
+### Uso
+Ahora en el fichero `src/warehouse/infrastructure/services/barcode_render/code128_barcode_renderer.py` el en cual se debe hacer uso de la librería `barcode` basta con hacer un a importación normal:
+```python
+import barcode
+from barcode.writer import ImageWriter
+```
 # C
 # C
 # C

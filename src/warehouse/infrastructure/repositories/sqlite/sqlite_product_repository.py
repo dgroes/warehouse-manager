@@ -24,14 +24,14 @@ class SQLiteProductRepository:
 
         for intento in range(max_intentos):
             barcode = self._barcode_generator.generate()
-              
+
             try:
                 cursor.execute(
                     """
                     INSERT INTO product (name, category_id, barcode,active)
                     VALUES(?, ?, ?, ?)
                     """,
-                    (product.name, product.category.id, barcode,1),
+                    (product.name, product.category.id, barcode, 1),
                 )
                 # obtener el ID
                 product_id = cursor.lastrowid
@@ -41,7 +41,6 @@ class SQLiteProductRepository:
 
                 # Asignar el Barcode al objeto
                 product._assign_barcode(barcode)
-
 
                 self._connection.commit()
 
@@ -65,3 +64,51 @@ class SQLiteProductRepository:
                 raise ValueError(
                     "Error de integridad al guardar el producto"
                 ) from error
+
+    def find_by_id(self, product_id: int) -> Product | None:
+        cursor = self._connection.cursor()
+
+        try:
+            cursor.execute(
+                """
+                SELECT id, name, category_id, barcode, active FROM product WHERE id = ?
+                """,
+                (product_id,),  # <- se pasa como tupla
+            )
+            row_product = cursor.fetchone()
+
+            if row_product is None:
+                return None
+
+            # Variable que almacena la tupla devuela por SQLite
+            pro_id, name, cateogory_id, barcode, active = row_product
+
+            # Crear el objeto Category en base al category_id
+
+         
+            cursor.execute(
+                """
+                    SELECT id, name, description, code FROM category WHERE id = ?
+                    """,
+                (cateogory_id,),
+            )
+            row_category = cursor.fetchone()
+            if row_category is None:
+                return None
+
+            # Construcción de Objeto Category
+            cat_id, name, description, code = row_category
+            category = Category(name=name, code=code, description=description)
+            category._assign_id(cat_id)
+
+            # Construcción de objeto Product
+            product = Product(name=name, category=Category.id)
+            product._assign_barcode(barcode)
+            product._assing_id(pro_id)
+        
+
+            return product
+        except sqlite3.Error as error:
+            # Nota: IntegrityError es para fallos de constraints (UNIQUE, FK).
+            # Para errores generales de lectura/ejecución se usa sqlite3.Error.
+            raise ValueError("Error al consultar la base de datos") from error

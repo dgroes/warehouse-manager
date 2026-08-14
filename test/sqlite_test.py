@@ -89,3 +89,7 @@ print(
     saved_product.barcode,
     saved_product.active,
 )
+
+
+producto_por_id = product_repository.find_by_id(67)
+print(producto_por_id)
