@@ -116,6 +116,7 @@ if producto_por_id:
     print(
         f"Producto recuperado por Repositorio: "
         f"ID={producto_por_id.id} | "
+        
         f"Nombre={producto_por_id.name} | "
         f"Activo={producto_por_id.active}"
     )
@@ -125,8 +126,7 @@ else:
  
 
 
-producto_por_id = product_repository.find_by_id(67)
-print(f"Producto buscado por ID: [{producto_por_id.name, producto_por_id.id, producto_por_id.category, producto_por_id.barcode, producto_por_id.active}]")
+
 
 """ 
 producto_por_barcode = product_repository.find_by_barcode("2227118753")
@@ -188,6 +188,28 @@ producto_id = obtener_dato_dinamico("id", "name", "iPhone 14 Pro Max")
 print(f"ID del iPhone: {producto_id}")
 
 
-print("\n Producto por BARCODE:")
+print("\nProducto por BARCODE:")
 producto_por_barcode = product_repository.find_by_barcode("3446163192")
-print (producto_por_barcode)
+print (producto_por_barcode.name, producto_por_barcode.category.name)
+
+
+print("\nProducto por ID:")
+producto_por_id = product_repository.find_by_id(67)
+print(producto_por_id.name, producto_por_id.id, producto_por_id.category.code, producto_por_id.barcode, producto_por_id.active)
+
+
+
+
+producto_por_id = product_repository.find_by_id(234241)
+
+# Validar si existe antes de acceder a sus propiedades
+if producto_por_id is not None:
+    print(
+        producto_por_id.name,
+        producto_por_id.id,
+        producto_por_id.category.code,
+        producto_por_id.barcode,
+        producto_por_id.active
+    )
+else:
+    print("No se encontró el producto con el ID especificado.")
