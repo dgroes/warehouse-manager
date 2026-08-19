@@ -107,57 +107,40 @@ class SQLiteProductRepository:
 
         return row
 
+    # Agregando "_" se indica que es un método interno del repository
+    def _reconstruct_product(self, id, name, category_id, barcode, active):
+
+        # Reconstrucción de la categoría
+        category_class = self._category_repository.find_by_id(category_id)
+
+        # Construcción del producto
+        product = Product(name=name, category=category_class)
+        product._assign_id(id)
+        product._assign_barcode(barcode)
+
+        # Tratado de active
+        if active == 0:
+            product.disable()
+
+        return product
+
+
     def find_by_id(self, product_id: int) -> Product | None:
-        cursor = self._connection.cursor()
 
-        try:
-            cursor.execute(
-                """
-                SELECT id, name, category_id, barcode, active FROM product WHERE id = ?
-                """,
-                (product_id,),  # <- se pasa como tupla
-            )
-            row_product = cursor.fetchone()
+        column = "id"
+        result = self.search(column, product_id)
+    
+        # Si no hay resultado en la BD, se retorna None inmediatamente
+        if result is None:
+            return None
 
-            if row_product is None:
-                return None
+        # Reconstrucción producto
+        pro_id, pro_name, pro_category_id, pro_barcode, pro_active = result
 
-            # active: En Product no se puede setear, para cambiar su estado (True, False) hace falta acceder a los métodos enable() y disable()
-            # Variable que almacena la tupla devuela por SQLite
-            pro_id, name, cateogory_id, barcode, active = row_product
+        # Construcción de producto
+        product = self._reconstruct_product(pro_id, pro_name, pro_category_id, pro_barcode, pro_active)
 
-            cursor.execute(
-                """
-                    SELECT id, name, description, code FROM category WHERE id = ?
-                    """,
-                (cateogory_id,),
-            )
-            row_category = cursor.fetchone()
-            if row_category is None:
-                return None
-
-            # Construcción de Objeto Category
-            cat_id, cat_name, cat_description, cat_code = row_category
-            category_class = Category(
-                name=cat_name, code=cat_code, description=cat_description
-            )
-            category_class._assign_id(cat_id)
-
-            # Construcción de objeto Product
-            product = Product(name=name, category=category_class)
-            product._assign_barcode(barcode)
-            product._assign_id(pro_id)
-
-            # Tratado del active
-            if active == 0:
-                product.disable()
-
-            return product
-
-        except sqlite3.Error as error:
-            # Nota: IntegrityError es para fallos de constraints (UNIQUE, FK).
-            # Para errores generales de lectura/ejecución se usa sqlite3.Error.
-            raise ValueError("Error al consultar la base de datos") from error
+        return product
 
     def find_by_barcode(self, barcode: str) -> Product | None:
 
@@ -165,15 +148,14 @@ class SQLiteProductRepository:
 
         # Utilización de método "search" para buscar por barcode
         result = self.search(column, barcode)
-        row_product = result
 
-        # Reconstrucción Producto
-        pro_id, pro_name, pro_cateogory_id, pro_barcode, pro_active = row_product
+        # Si no hya reslutado en la BD, se retorna None
+        if result is None:
+            return None
 
-        # Reconstrucción Categoría
-        category_class = self._category_repository.find_by_id(pro_cateogory_id)
+        # Reconstrucción de producto
+        pro_id, pro_name, pro_category_id, pro_barcode, pro_active = result
+        # Construcción de producto
+        product = self._reconstruct_product(pro_id, pro_name, pro_category_id, pro_barcode, pro_active)
 
-        product = Product(pro_name, category=category_class)
-
-        print(product.name, product.category.code)
-        return category_class
+        return product
