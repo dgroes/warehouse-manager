@@ -3,7 +3,10 @@ from warehouse.domain.product import Product
 from warehouse.domain.category import Category
 from warehouse.infrastructure.database.sqlite_connection import SQLiteConnection
 from warehouse.infrastructure.services.random_barcode_generator import BarcodeGenerator
-from warehouse.infrastructure.repositories.sqlite.sqlite_category_repository import SQLiteCategoryRepository
+from warehouse.infrastructure.repositories.sqlite.sqlite_category_repository import (
+    SQLiteCategoryRepository,
+)
+
 
 class SQLiteProductRepository:
 
@@ -17,8 +20,6 @@ class SQLiteProductRepository:
 
         # se inyecta la misma conexión al repositorio de categorías internamente
         self._category_repository = SQLiteCategoryRepository(self._connection)
-
-
 
     def save(self, product: Product) -> Product:
         cursor = self._connection.cursor()
@@ -70,9 +71,26 @@ class SQLiteProductRepository:
                     "Error de integridad al guardar el producto"
                 ) from error
 
-    def search(self, column:str, value:any) -> Product | None:
+    def update(self, product: Product) -> Product | None:
+        cursor = self._connection.cursor()
 
-        
+        try:
+            cursor.execute(
+                """
+                UPDATE product SET name = ?, category_id = ? WHERE id = ?
+                """,
+                (product.name, product.category.id, product.id),
+            )
+
+            if cursor.rowcount == 0:
+                raise ValueError(f"No existe ningún producto con el ID {product.id} para actualizar.")
+
+            self._connection.commit()
+            return product
+        except sqlite3.Error as error:
+            raise ValueError(f"Error en la base de datos al actualizar el producto con ID: {product.id}. [ERROR]: {error}") from error
+
+    def search(self, column: str, value: any) -> Product | None:
 
         # Creación de la conexión
         cursor = self._connection.cursor()
@@ -101,45 +119,69 @@ class SQLiteProductRepository:
             if row is None:
                 return None
         except sqlite3.Error as error:
-                    # Nota: IntegrityError es para fallos de constraints (UNIQUE, FK).
-                    # Para errores generales de lectura/ejecución se usa sqlite3.Error.
-                raise ValueError("Error al consultar la base de datos") from error
+            # Nota: IntegrityError es para fallos de constraints (UNIQUE, FK).
+            # Para errores generales de lectura/ejecución se usa sqlite3.Error.
+            raise ValueError("Error al consultar la base de datos") from error
 
         return row
 
+    def disable(self, product: Product) -> Product | None:
+
+        cursor = self._connection.cursor()
+
+
+        try: 
+            cursor.execute(
+            """
+            UPDATE product SET active = 0 WHERE id = ?
+            """,
+            (product.id)
+        )
+            if cursor.rowcount == 0:
+                raise ValueError(f"No existe el producto con el ID {product.id}.")
+                
+            self._connection.commit()
+            return product
+        except sqlite3.Error as error:
+            raise ValueError(f"Error en al base de datos al desactivar el producto ID: {product.id}. [ERROR]: {error}") from error
+
+
+    def enable(self, product: Product) -> Product | None:
+        pass
+
+
+
     # Agregando "_" se indica que es un método interno del repository
-    def _reconstruct_product(self, id, name, category_id, barcode, active):
+    def _reconstruct_product(self, result):
+
+        # Separa el "result" en las distintas columnas
+        pro_id, pro_name, pro_category_id, pro_barcode, pro_active = result
 
         # Reconstrucción de la categoría
-        category_class = self._category_repository.find_by_id(category_id)
+        category_class = self._category_repository.find_by_id(pro_category_id)
 
         # Construcción del producto
-        product = Product(name=name, category=category_class)
-        product._assign_id(id)
-        product._assign_barcode(barcode)
+        product = Product(name=pro_name, category=category_class)
+        product._assign_id(pro_id)
+        product._assign_barcode(pro_barcode)
 
         # Tratado de active
-        if active == 0:
+        if pro_active == 0:
             product.disable()
 
         return product
-
 
     def find_by_id(self, product_id: int) -> Product | None:
 
         column = "id"
         result = self.search(column, product_id)
-    
+
         # Si no hay resultado en la BD, se retorna None inmediatamente
         if result is None:
             return None
 
-        # Reconstrucción producto
-        pro_id, pro_name, pro_category_id, pro_barcode, pro_active = result
-
         # Construcción de producto
-        product = self._reconstruct_product(pro_id, pro_name, pro_category_id, pro_barcode, pro_active)
-
+        product = self._reconstruct_product(result)
         return product
 
     def find_by_barcode(self, barcode: str) -> Product | None:
@@ -153,9 +195,9 @@ class SQLiteProductRepository:
         if result is None:
             return None
 
-        # Reconstrucción de producto
-        pro_id, pro_name, pro_category_id, pro_barcode, pro_active = result
         # Construcción de producto
-        product = self._reconstruct_product(pro_id, pro_name, pro_category_id, pro_barcode, pro_active)
+        product = self._reconstruct_product(result)
 
         return product
+
+    

@@ -213,3 +213,23 @@ if producto_por_id is not None:
     )
 else:
     print("No se encontró el producto con el ID especificado.")
+
+
+
+print("\nUPDATE ⚡")
+category_para_actualizar = category_repository.find_by_id(1)
+
+producto_para_actualizar = product_repository.find_by_id(67)
+producto_para_actualizar.name = "Yamaha teclado"
+#producto_para_actualizar.category = category_para_actualizar
+
+#print(producto_para_actualizar.name, producto_para_actualizar.category.name)
+producto_actualizado = product_repository.update(producto_para_actualizar)
+
+print(producto_actualizado.name, producto_actualizado.category.code)
+
+
+print("\nDESACTIVAR 👎")
+producto_a_desactivar = product_repository.find_by_id(67)
+producto_desactivado = product_repository.enable(producto_a_desactivar)
+print(producto_a_desactivar.active, producto_a_desactivar.name)
