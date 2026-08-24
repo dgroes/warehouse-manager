@@ -83,12 +83,16 @@ class SQLiteProductRepository:
             )
 
             if cursor.rowcount == 0:
-                raise ValueError(f"No existe ningún producto con el ID {product.id} para actualizar.")
+                raise ValueError(
+                    f"No existe ningún producto con el ID {product.id} para actualizar."
+                )
 
             self._connection.commit()
             return product
         except sqlite3.Error as error:
-            raise ValueError(f"Error en la base de datos al actualizar el producto con ID: {product.id}. [ERROR]: {error}") from error
+            raise ValueError(
+                f"Error en la base de datos al actualizar el producto con ID: {product.id}. [ERROR]: {error}"
+            ) from error
 
     def search(self, column: str, value: any) -> Product | None:
 
@@ -125,31 +129,55 @@ class SQLiteProductRepository:
 
         return row
 
-    def disable(self, product: Product) -> Product | None:
+    # No se necesita "None": si la actualización es exitosa,el método devuelve el mismo Product recibido. Si ocurre un error, se lanza una excepción.
+    def disable(self, product: Product) -> Product:
 
         cursor = self._connection.cursor()
 
-
-        try: 
+        try:
             cursor.execute(
-            """
+                """
             UPDATE product SET active = 0 WHERE id = ?
             """,
-            (product.id)
-        )
+                (product.id,),
+            )
+
+            product.disable()
+
             if cursor.rowcount == 0:
                 raise ValueError(f"No existe el producto con el ID {product.id}.")
-                
+
             self._connection.commit()
             return product
         except sqlite3.Error as error:
-            raise ValueError(f"Error en al base de datos al desactivar el producto ID: {product.id}. [ERROR]: {error}") from error
+            raise ValueError(
+                f"Error en al base de datos al desactivar el producto ID: {product.id}. [ERROR]: {error}"
+            ) from error
 
+    # No se necesita "None": si la actualización es exitosa,el método devuelve el mismo Product recibido. Si ocurre un error, se lanza una excepción.
+    def enable(self, product: Product) -> Product:
 
-    def enable(self, product: Product) -> Product | None:
-        pass
+        cursor = self._connection.cursor()
 
+        try:
+            cursor.execute(
+                """
+            UPDATE product SET active = 1 WHERE id = ?
+            """,
+                (product.id,),
+            )
 
+            product.enable()
+
+            if cursor.rowcount == 0:
+                raise ValueError(f"No existe el producto con el ID {product.id}.")
+
+            self._connection.commit()
+            return product
+        except sqlite3.Error as error:
+            raise ValueError(
+                f"Error en al base de datos al activar el producto ID: {product.id}. [ERROR]: {error}"
+            ) from error
 
     # Agregando "_" se indica que es un método interno del repository
     def _reconstruct_product(self, result):
@@ -199,5 +227,3 @@ class SQLiteProductRepository:
         product = self._reconstruct_product(result)
 
         return product
-
-    

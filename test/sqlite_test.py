@@ -231,5 +231,12 @@ print(producto_actualizado.name, producto_actualizado.category.code)
 
 print("\nDESACTIVAR 👎")
 producto_a_desactivar = product_repository.find_by_id(67)
-producto_desactivado = product_repository.enable(producto_a_desactivar)
+producto_desactivado = product_repository.disable(producto_a_desactivar)
 print(producto_a_desactivar.active, producto_a_desactivar.name)
+
+
+
+print("\nACTIVAR 👍")
+producto_a_activar = product_repository.find_by_id(67)
+producto_activado = product_repository.enable(producto_a_activar)
+print(producto_activado.active, producto_activado.name)
