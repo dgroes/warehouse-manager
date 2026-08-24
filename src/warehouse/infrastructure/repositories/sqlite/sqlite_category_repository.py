@@ -38,59 +38,75 @@ class SQLiteCategoryRepository:
 
             raise ValueError("No se pudo guardar la categoría") from error
 
-    def find_by_id(self, category_id: int) -> Category | None:
+    def search(self, column: str, value: any) -> tuple | None:
         cursor = self._connection.cursor()
 
+        # Definir las columnas validas:
+        valid_column = {
+            "id": "id",
+            "name": "name",
+            "description": "description",
+            "code": "code",
+        }
+
+        # Validación de segurdad(evitar Inyección SQL)
+        if column not in valid_column:
+            raise ValueError(f"La columna a buscar '{column}' no es válida.")
+
+        #Obtención de los nombres según mapeados
+        where_safe = valid_column[column]
+
+        # SQL dinamico
+        query = f"SELECT id, name, description, code FROM category WHERE {where_safe} = ?"
+
         try:
-            cursor.execute(
-                """
-                SELECT id, name, description, code FROM category WHERE id = ?
-                """,
-                (category_id,), # <- Se pasa como tupla
-            )
-
+            cursor.execute(query, (value,))
             row = cursor.fetchone()
-
             if row is None:
                 return None
 
-            # se reconstruye el objeto Category desde la tupla devuelta por SQLite
-            # Inserción según los parámetros de tu constructor Category
-            cat_id, name, description, code = row
-            category = Category(name=name, code=code, description=description)
-            category._assign_id(cat_id)
-
-            return category
-
         except sqlite3.Error as error:
-            # Nota: IntegrityError es para fallos de constraints (UNIQUE, FK).
-            # Para errores generales de lectura/ejecución se usa sqlite3.Error.
             raise ValueError("Error al consultar la base de datos") from error
 
+        return row
+
+
+    def _reconstruct_category(self, result):
+
+        # Separar el "result" en las distintas columnas:
+        cat_id, cat_name, cat_description, cat_code = result
+
+        # Construcción de la categoría:
+        category = Category(name=cat_name, description=cat_description, code=cat_code)
+        category._assign_id(cat_id)
+
+        return category
+
+
+    def find_by_id(self, category_id: int) -> Category | None:
+        column = "id"
+        result = self.search(column, category_id)
+
+        #Si no hay resultado en la DB, se retorna None
+        if result is None:
+            return None
+
+        category = self._reconstruct_category(result)
+        return category
+
+       
+
     def find_by_code(self, category_code: str) -> Category | None:
-        cursor = self._connection.cursor()
 
-        try:
-            cursor.execute(
-                """
-                SELECT id, name, description, code FROM category WHERE code = ?
-                """,
-                (category_code,),
-            )
+       column = "code"
+       result = self.search(column, category_code)
 
-            row = cursor.fetchone()
+       if result is None:
+           return None
 
-            if row is None:
-                return None
+       category = self._reconstruct_category(result)
+       return category
 
-            cat_id, name, description, code = row
-            category = Category(name=name, code=code, description=description)
-            category._assign_id(cat_id)
-
-            return category
-
-        except sqlite3.Error as error:
-            raise ValueError("Erorr al consultar la base de datos") from error
 
 # Que hace exactamente save():
 # Category
