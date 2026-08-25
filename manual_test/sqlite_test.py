@@ -57,7 +57,7 @@ category = category_repository.find_by_id(2)
 print(category.name, category.id, category.code)
 
 # Buscar por código
-category_two = category_repository.find_by_code("tec")
+category_two = category_repository.find_by_code("ins")
 print(category_two.name, category_two.id, category_two.code)
 
 

@@ -449,10 +449,78 @@ Ahora en el fichero `src/warehouse/infrastructure/services/barcode_render/code12
 import barcode
 from barcode.writer import ImageWriter
 ```
-# C
-# C
-# C
-# C
+# C10: Pytest
+**Pytest** es un popular marco de trabajo (*framework*) de pruebas para Python que permite escribir código de prueba simple, legible y escalable.
+- **Sintaxis simple**: Usa funciones normales con la instrucción estándar `assert` de Python, sin requierir clases complejas
+- **Descubrimiento automático**: Encuentra y ejecuta de forma automática los archivos y funciones que comienzan con el prefijo `test_`
+Fixtures: Permiten configurar entornos y datos iniciales de forma limpia y reutilizable para pruebas.
+- **Parametrización**: Facilita probar una misma función con multiples valores de entrada usando decoradores.<br><br>
+**Documentación Oficial**: [pytest](https://docs.pytest.org/en/stable/)
+## Instalación
+Al igual como se hizo con `barcode`, pytest tambien estará dentro del entorno virtual para mantener un orden y control de las librerias/frameworks. 
+1. Verificar en que lugar está en la terminal (debe ser siempre en la raíz del proyecto):
+```bash
+pwd
+```
+Esto devolvería algo similar a esto:
+```bash
+@dgroes ➜ warehouse-manager git(main) pwd
+/home/dgroes/Documentos/Workspace/warehouse-manager
+```
+2. Activar el entorno virual:
+```bash
+source .venv/bin/activate
+```
+Luego hacer:
+```bash
+@dgroes ➜ warehouse-manager git(main) which python
+/home/dgroes/Documentos/Workspace/warehouse-manager/.venv/bin/python
+```
+Ahí se indica que ya se usa el entorno virtual
+3. Para la instalación basta con:
+```bash
+python -m pip install pytest
+``` 
+Se podría hacer luego una comprobación con `python -m pytest --version`. Aquí no se usa `python3` para esto, porque en el sistema `python3` apunta a `/usr/bin/python3`, mientras se trabajo con el entorno virtual se querrá trabajar con: `warehouse-manager/.venv/bin/python`.
+4. Luego con `which python` muestre `.venv/bin/python` se está ya confirmado en donde se debería estar:
+```bash
+@dgroes ➜ warehouse-manager git(main) which python
+/home/dgroes/Documentos/Workspace/warehouse-manager/.venv/bin/python
+```
+5. Para salir el entorno virutal basta con `deactivate`:
+```bash
+@dgroes ➜ warehouse-manager git(main) pwd
+/home/dgroes/Documentos/Workspace/warehouse-manager
+@dgroes ➜ warehouse-manager git(main) source .venv/bin/activate
+  (warehouse-manager)@dgroes ➜ warehouse-manager git(main) deactivate
+@dgroes ➜ warehouse-manager git(main) source .venv/bin/activate
+```
+# C11: Pytest en uso
+En Pytest se usa la palabra reservada de `assert`, esta significa: "*Pytest, comprueba que esto sea verdadero.*". En el caso de que sea verdadero dará un "PASSED", si es falso: "FAILED". <br>
+Las funciones de Pytest normalmente empiezan con: `test_`, por ejemplo: `def test_find_category_by_id():`, lo que hace Pytest es detectar automáticamente esa función. <br>
+Entonces desde la raíz del proyecto en la terminal al ejecutar:
+```bash
+python -m pytest
+```
+Pytest busca archivos como: `test_*.py` y `*_test.py` y funciones como: `test_*` y luego las ejecuta
+# C12: Pytest Fixture
+En Pytest, fixture es una función escencial que prepara el ambiente, los datos o los recursos necesarios antes de ejecutar una prueba.
+- **Preparación (setup)**: Crean estados iniciales, conexiones a bases de datos o datos de prueba fijos.
+- **Limpieza (teardown)**: Borran datos o cierran conexiones cuando la prueba termina.
+- **Reutilización**: Evitan repetir el mismo código de configuracion en múltiples pruebas
+## ¿Cómo se usan?
+Se definen usando el decorador` @pytest.fixture` y se inyectan en las funciones de prueba simplemente escribiendo el nombre de la fixture como un argumento.
+```py
+import pytest
+
+@pytest.fixture
+def datos_usuario():
+    return {"nombre": "Ana", "edad": 30}
+
+def test_edad_usuario(datos_usuario):
+    assert datos_usuario["edad"] == 30
+
+```
 # C
 # C
 # C
