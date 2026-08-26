@@ -502,7 +502,13 @@ Entonces desde la raíz del proyecto en la terminal al ejecutar:
 ```bash
 python -m pytest
 ```
-Pytest busca archivos como: `test_*.py` y `*_test.py` y funciones como: `test_*` y luego las ejecuta
+Pytest busca archivos como: `test_*.py` y `*_test.py` y funciones como: `test_*` y luego las ejecuta<br>
+Dentro del proyecto se separaron las pruebas manuales y las que usarán pytest, entonces para poder ejecutarlo de la manera correcta se hará:
+```bash
+(warehouse-manager)@dgroes ➜ warehouse-manager git(main) python -m pytest tests/
+```
+Así ejecutaría todos los tests de la ruta `tests/` (ruta en la cual estarán los ficheros vinculados al framework).
+
 # C12: Pytest Fixture
 En Pytest, fixture es una función escencial que prepara el ambiente, los datos o los recursos necesarios antes de ejecutar una prueba.
 - **Preparación (setup)**: Crean estados iniciales, conexiones a bases de datos o datos de prueba fijos.
@@ -521,9 +527,34 @@ def test_edad_usuario(datos_usuario):
     assert datos_usuario["edad"] == 30
 
 ```
-# C
-# C
-# C
+En Python normal, para usar algo de otro fichero se hace un `import`. En Pytest no se importan las fixtures.<br>
+Pytest hace mágia mediante el nombre del argumento:
+1. Al ejecutar `python -m pytest`, Pytest lee el archivo `conftest.py` y registra toas las funciones decoradas con `@pytest.fixture`-
+2. Cuando ve que la función se llama `def test_find_category_by_id(connection):`, busca si exsite alguna fixture llamada exactamente igual (`connection`).
+3. Ejecuta la fixture, toma el valor que devuelve el `yield` y se lo inyecta al test como variable
+
+# C13: Pytest configuración manual
+Dentro del proyecto están las rutas `manual_test` y `tests`, al ejecutar Pytest toma en cuenta todas las rutas con la palabra "*test*", entonces toma la ruta `manual_test`. Para especificar que rutas debería tener en cuenta, dentro de la raíz del proyecto está el fichero `pytest.ini`, en el cual se especifica cuales serán las rutas a utilizar. Así se evitarn errores de leer rutas no decesada como las pruebas manuales.
+# C14: Pytest conftest
+No es un fichero de tests, su función será contener cosas reutilizables por varios test, especialmente **fixtures**, por ejemplo, conceptualmente:
+```bash
+tests/
+│
+├── conftest.py
+│       │
+│       ├── fixture connection
+│       └── fixture category_repository
+│
+├── test_category_repository.py
+│       └── usa category_repository
+│
+└── test_product_repository.py
+        └── usa product_repository
+```
+Así no se terminaría copiando la misma prepariación en todos los archivos
+# C15: Pytest y las Base de Datos
+Al realizar pruebas como las de Pytest, lo ideal es tener una base datos para dichas pruebas, aśi no se ensuciaría la data real. Por eso dentro del fichero `conftest` estará una **conexión a la BD pero en memoria**.
+
 # C
 # C
 # C
