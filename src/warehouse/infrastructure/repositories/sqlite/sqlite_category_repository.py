@@ -1,6 +1,7 @@
 import sqlite3
 from warehouse.domain.category import Category
 from warehouse.infrastructure.database.sqlite_connection import SQLiteConnection
+from warehouse.domain.exceptions import DuplicateCategoryCodeError
 
 
 class SQLiteCategoryRepository:
@@ -20,23 +21,16 @@ class SQLiteCategoryRepository:
                 (category.name, category.description, category.code),
             )
 
-            # lastrowid: "¿Cuál fue el ID que SQLite acaba de generar en el último INSERT?"
             category_id = cursor.lastrowid
-
-            # `_assign_id()` sirve para asignarle el ID al objeto de Python el ID que se acaba de generar en la DB
             category._assign_id(category_id)
-
             self._connection.commit()
 
             return category
 
-        # Para los errores
         except sqlite3.IntegrityError as error:
-
-            # Gracias al rollback: "Deshaz cualquier cambio pendiente de esta transacción"
             self._connection.rollback()
-
-            raise ValueError("No se pudo guardar la categoría") from error
+            # Capturamos la causa raíz específica y lanzamos el error de Dominio
+            raise DuplicateCategoryCodeError(category.code) from error
 
     def search(self, column: str, value: any) -> tuple | None:
         cursor = self._connection.cursor()

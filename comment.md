@@ -555,6 +555,25 @@ Así no se terminaría copiando la misma prepariación en todos los archivos
 # C15: Pytest y las Base de Datos
 Al realizar pruebas como las de Pytest, lo ideal es tener una base datos para dichas pruebas, aśi no se ensuciaría la data real. Por eso dentro del fichero `conftest` estará una **conexión a la BD pero en memoria**.
 
-# C
+# C16: Excepciones personalizadas del Dominio
+En `src/warehouse/domain/exceptions.py` se definen las excepciones de negocio de la aplicación. Su objetivo es desacoplar los errores técnicos de la infraestructura (como los de la base de datos) del resto de la aplicación.
+### ¿Por qué este cambio es una mejora?
+* **Traducción de contexto:** Transforma errores técnicos genéricos (ej. `sqlite3.IntegrityError`) en excepciones con significado de negocio (`DuplicateCategoryCodeError`).
+* **Desacoplamiento:** Si en el futuro cambiamos SQLite por PostgreSQL u otra BD, los casos de uso y la API no se verán afectados, ya que siempre esperarán las excepciones del Dominio.
+* **Mensajes claros:** Permite enviar respuestas más expresivas a la capa superior (como un HTTP 409 Conflict o un mensaje claro al usuario) sin exponer detalles de la base de datos.
+### Flujo de traducción de errores:
+```bash
+Capa de Infraestructura (SQLite)
+  │
+  │ Error técnico de restricción única
+  ↓
+sqlite3.IntegrityError
+  │
+  │ El Repositorio captura y traduce la excepción
+  ↓
+DuplicateCategoryCodeError (Dominio)
+  │
+  ↓
+La Capa Superior (Caso de Uso / API) decide cómo responder limpiamente
 # C
 # C

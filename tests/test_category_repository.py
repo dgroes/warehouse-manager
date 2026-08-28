@@ -10,6 +10,9 @@ from warehouse.infrastructure.repositories.sqlite.sqlite_category_repository imp
     SQLiteCategoryRepository,
 )
 from warehouse.domain.category import Category
+from warehouse.domain.exceptions import DuplicateCategoryCodeError
+import pytest
+import re
 
 
 def test_find_category_by_id(connection):
@@ -36,6 +39,15 @@ def test_find_category_by_id(connection):
     assert category.code == "tec"
 
 
+def test_find_category_by_id_fail(connection):
+
+    repository = SQLiteCategoryRepository(connection)
+
+    category = repository.find_by_id(1)
+
+    assert category is None
+
+
 def test_save_category(connection):
 
     repository = SQLiteCategoryRepository(connection)
@@ -48,6 +60,23 @@ def test_save_category(connection):
     assert category.id == 1
     assert category.name == "Tecnología"
     assert category.code == "tec"
+
+
+def test_save_category_code_duplicate(connection):
+    repository = SQLiteCategoryRepository(connection)
+
+    first_cat = Category("Tecnología", "Productos tech", "tec")
+    repository.save(first_cat)
+
+    second_cat = Category("Instrumento", "Instrumentos Musicales", "tec")
+
+    # Se verifica que se lance la excepción semántica de Dominio
+    # re.escape() sirve para que el texto que se quiere comparar sea tratado literalmente, y no como una expresión regular.
+    mensaje_esperado = "Ya existe una categoría con el código 'tec'."
+    with pytest.raises(
+        DuplicateCategoryCodeError, match=f"^{re.escape(mensaje_esperado)}$"
+    ):
+        repository.save(second_cat)
 
 
 def test_find_category_by_code(connection):
@@ -67,6 +96,53 @@ def test_find_category_by_code(connection):
     assert category.id == 1
     assert category.name == "Tecnología"
     assert category.code == "tec"
+
+
+def test_find_category_by_code_fail(connection):
+
+    repository = SQLiteCategoryRepository(connection)
+    category = repository.find_by_code("ins")
+
+    assert category is None
+
+
+# By Name
+def test_search_category(connection):
+    cursor = connection.cursor()
+
+    cursor.execute(
+        "INSERT INTO category (name, description, code) VALUES (?,?,?)",
+        ("Tecnología", "Productos tech", "tec"),
+    )
+
+    connection.commit()
+
+    repository = SQLiteCategoryRepository(connection)
+    result = repository.search("name", "Tecnología")
+
+    # Comprobar que 'result' sea un objeto de tipo tuple
+    assert isinstance(result, tuple)
+    assert result[0] == 1
+    assert result[1] == "Tecnología"
+    assert result[2] == "Productos tech"
+    assert result[3] == "tec"
+
+
+def test_search_category_not_found(connection):
+
+    repository = SQLiteCategoryRepository(connection)
+
+    result = repository.search("name", "No existe")
+
+    assert result is None
+
+def test_search_invalid_column(connection):
+    repository = SQLiteCategoryRepository(connection)
+
+    # Verificamos que al pasar una columna no permitida lance ValueError
+    with pytest.raises(ValueError, match="La columna a buscar 'namess' no es válida."):
+        repository.search("namess", "algo")
+
 
 # pytest
 #   │
