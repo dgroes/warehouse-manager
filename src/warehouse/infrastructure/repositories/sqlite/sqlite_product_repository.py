@@ -109,7 +109,7 @@ class SQLiteProductRepository:
 
         # Validación de seguridad estrica para evitar inyección SQL
         if column not in valid_column:
-            raise ValueError(f"La columna a buscar '{column}' no es válida")
+            raise ValueError(f"La columna a buscar '{column}' no es válida.")
 
         # Obtención de los nombres seguros mapeados:
         where_safe = valid_column[column]
