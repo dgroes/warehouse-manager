@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from warehouse.domain.repositories.product_repository import ProductRepository
 from warehouse.domain.product import Product
 from warehouse.domain.services.barcode_generator import BarcodeGenerator
@@ -12,15 +11,17 @@ class InMemoryProductRepository(ProductRepository): #hereda de ABC
         self._barcode_generator = barcode_generator
 
     # Usar método obligatorio de ProductRepository
-    def save(self, product: Product) -> None:
+    def save(self, product: Product) -> Product:
         product._assign_id(self._next_id)
 
-        barcode = self._barcode_generator.generate(product.id)
+        barcode = self._barcode_generator.generate()
 
         product._assign_barcode(barcode)
         
         self._products.append(product)
         self._next_id +=1
+
+        return product
 
 
     # Usar método obligatorio de ProductRepository
