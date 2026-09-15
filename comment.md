@@ -575,5 +575,15 @@ DuplicateCategoryCodeError (Dominio)
   │
   ↓
 La Capa Superior (Caso de Uso / API) decide cómo responder limpiamente
-# C
+```
+# C17: Casos de uso
+Un Caso de Uso en arquitectura limpia representa una **acción específica que un usuario o sistema quiere realizar dentro de la apliacción**. Es la unidad que orquesta y coordina las reglas de negocio para cumpli ese objetivo puntual.<br>
+Dentro del contexto, `CreateProduct` **es el caso de uso**, y sus caracteríasticas principales son:
+- **Representa una intención clara**: Responde a la pregunta "¿Qué quiere hacer el usuario"? (En este caso: Crear un producto).
+- **Es el director de orquesta (Orquestador)**: No sabe cómo se guarda en SQLite ni cómo se difbuja en la pantalla. Su trabajo es coordinar: Le pide la categoría a un repositorio, construye el objeto `Product`, llama al generador de código de barras y le entraga el producto final al repositorio para que lo guarde.
+- **Define el límite de la aplicación**: Recibe datos de entrada crudos (`name`, `category_id`), aplica la lógica operativa y devuelve un resultado.
+- **Es independiente de la intraestructura**: Debe funcionar exactamente igual sin importar si la petición viene de un comando de terminal, una API REST o una interfaz gráfica.
+
+
+
 # C
