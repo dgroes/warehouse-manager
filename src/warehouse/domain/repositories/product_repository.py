@@ -11,7 +11,7 @@ from warehouse.domain.product import Product  # <- ahora
 class ProductRepository(ABC):  # Hereda de ABC
 
     @abstractmethod  # Obliga a implementar este método
-    def save(self, product: Product) -> None:
+    def save(self, product: Product) -> Product:
         pass
 
     # C07: Optional

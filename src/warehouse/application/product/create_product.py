@@ -1,18 +1,27 @@
+# C17: Casos de uso
 from warehouse.domain.repositories.product_repository import ProductRepository
+from warehouse.domain.repositories.category_repository import CategoryRepository
 from warehouse.domain.category import Category
 from warehouse.domain.product import Product
 
 
 # CreateProduct debería pedirle al repositorio que guarde el producto.
 class CreateProduct:
-    def __init__(self, repository: ProductRepository):
-        self._repository = repository
+    def __init__(self, product_repository: ProductRepository, category_repository: CategoryRepository):
+        self._product_repository = product_repository
+        self._category_repository = category_repository
 
-    def execute(self, name: str, category: Category):
-        product = Product(name, category)  # <- Crea el objeto de dominio
+    def execute(self, name: str, category_id: int):
 
-        # No guarda en la DB, sino que llama la abstracción `ProductRepository`
-        self._repository.save(product)
+        category = self._category_repository.find_by_id(category_id)
+
+        if category is None:
+            raise ValueError(f"No se encontró la categoría con el id {category_id}")
+
+        # Si existe, la ejecución continua
+        product = Product(name, category) 
+
+        self._product_repository.save(product)
 
         # Retornar el producto
         return product
